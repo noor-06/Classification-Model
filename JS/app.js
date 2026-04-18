@@ -38,6 +38,12 @@ $(document).ready(function() {
 
         // 4. Staging Files (Adding to Queue without processing)
         function handleFiles(files) {
+            // 1. The Safety Check
+    let currentQueueSize = $('.queue-item').length;
+    if (currentQueueSize + files.length > 20) {
+        alert("Maximum batch size is 20 satellite images. Please run the model or clear the queue.");
+        return; // This stops the code from adding them
+        
             $.each(files, function(index, file) {
                 let newRowId = 'queue-' + Date.now() + index;
                 
