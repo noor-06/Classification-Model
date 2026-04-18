@@ -20,39 +20,46 @@ $(document).ready(function() {
             options: { responsive: true, maintainAspectRatio: false }
         });
 
-        // 2. Upload Logic (Drag & Drop + Clicking)
+        // 2. Upload Logic (The Guaranteed Click Fix)
         const dropzone = $('#imageDropzone');
         const fileInput = $('#fileInput');
         
+        // Force the click to open the file explorer
+        dropzone.off('click').on('click', function(e) {
+            if(e.target.id !== 'fileInput') { 
+                fileInput[0].click(); 
+            }
+        });
+
         // Drag effects
-        dropzone.on('dragover', function(e) {
+        dropzone.off('dragover').on('dragover', function(e) {
             e.preventDefault();
             $(this).addClass('dragover');
         });
 
-        dropzone.on('dragleave', function(e) {
+        dropzone.off('dragleave').on('dragleave', function(e) {
             e.preventDefault();
             $(this).removeClass('dragover');
         });
 
-        dropzone.on('drop', function(e) {
+        dropzone.off('drop').on('drop', function(e) {
             e.preventDefault();
             $(this).removeClass('dragover');
             handleFiles(e.originalEvent.dataTransfer.files);
         });
 
-        fileInput.on('change', function(e) {
+        fileInput.off('change').on('change', function(e) {
             handleFiles(e.target.files);
         });
 
         // 4. Staging Files (Adding to Queue without processing)
         function handleFiles(files) {
-            // 1. The Safety Check (FIXED BRACKETS)
+            // 1. The Safety Check
             let currentQueueSize = $('.queue-item').length;
             if (currentQueueSize + files.length > 20) {
                 alert("Maximum batch size is 20 satellite images. Please run the model or clear the queue.");
                 return; 
-            } // <--- This was the missing bracket!
+            }
 
             $.each(files, function(index, file) {
                 let newRowId = 'queue-' + Date.now() + index;
