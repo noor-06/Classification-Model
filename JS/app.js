@@ -1,21 +1,30 @@
 $(document).ready(function() {
     
-// ==========================================
+    // ==========================================
     // PAGE 1: CLASSIFICATION DASHBOARD LOGIC
     // ==========================================
     if ($('#donutChart1').length > 0) {
         
-        // ... (Keep your Chart 1 and Chart 2 initialization code here exactly as it was) ...
+        // 1. Initialize Charts
+        const ctx1 = document.getElementById('donutChart1').getContext('2d');
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: { labels: ['Urban', 'Agriculture', 'Nature'], datasets: [{ data: [45, 30, 25], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
 
-        // 3. Upload Logic (Drag & Drop + Clicking)
+        const ctx2 = document.getElementById('donutChart2').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: { labels: ['Processed', 'Pending'], datasets: [{ data: [80, 20], backgroundColor: ['#10b981', '#cbd5e1'] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 2. Upload Logic (Drag & Drop + Clicking)
         const dropzone = $('#imageDropzone');
         const fileInput = $('#fileInput');
         
-        // THE CLICK FIX: Use [0] to trigger the native HTML click
-        dropzone.on('click', function() {
-            fileInput[0].click();
-        });
-
+        // Drag effects
         dropzone.on('dragover', function(e) {
             e.preventDefault();
             $(this).addClass('dragover');
@@ -38,25 +47,26 @@ $(document).ready(function() {
 
         // 4. Staging Files (Adding to Queue without processing)
         function handleFiles(files) {
-            // 1. The Safety Check
-    let currentQueueSize = $('.queue-item').length;
-    if (currentQueueSize + files.length > 20) {
-        alert("Maximum batch size is 20 satellite images. Please run the model or clear the queue.");
-        return; // This stops the code from adding them
-        
+            // 1. The Safety Check (FIXED BRACKETS)
+            let currentQueueSize = $('.queue-item').length;
+            if (currentQueueSize + files.length > 20) {
+                alert("Maximum batch size is 20 satellite images. Please run the model or clear the queue.");
+                return; 
+            } // <--- This was the missing bracket!
+
             $.each(files, function(index, file) {
                 let newRowId = 'queue-' + Date.now() + index;
                 
                 // Build the row with an image tag and a remove (X) button
                 let itemHtml = `
-                    <div class="queue-item pending-item" id="${newRowId}">
+                    <div class="queue-item pending-item" id="${newRowId}" style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
                         <div style="display:flex; align-items:center; gap:15px;">
                             <img class="queue-img preview-img" src="" alt="preview" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #ddd;" />
                             <span>${file.name}</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <span class="status-badge" style="background: #e2e8f0; color: #475569;">Ready</span>
-                            <i class="fa-solid fa-xmark remove-btn" style="color: #ef4444; cursor: pointer; font-size: 16px;"></i>
+                            <span class="status-badge" style="background: #e2e8f0; color: #475569; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;">Ready</span>
+                            <i class="fa-solid fa-xmark remove-btn" style="color: #ef4444; cursor: pointer; font-size: 16px; margin-left: 10px;"></i>
                         </div>
                     </div>
                 `;
@@ -94,7 +104,7 @@ $(document).ready(function() {
                 let badge = row.find('.status-badge');
                 badge.css({'background': '#fef3c7', 'color': '#d97706'}).html('<i class="fa-solid fa-spinner fa-spin"></i> Processing...');
                 
-                // Simulate backend AI processing with a slight stagger so they don't all finish at the exact same millisecond
+                // Simulate backend AI processing with a slight stagger
                 setTimeout(function() {
                     badge.css({'background': '#dcfce7', 'color': '#166534'}).html('URBAN (99.4% Confirmed)');
                 }, 1000 + (index * 500)); 
@@ -108,7 +118,7 @@ $(document).ready(function() {
     }
 
     // ==========================================
-    // PAGE 2: TRENDS LOGIC (If you added it previously)
+    // PAGE 2: TRENDS LOGIC
     // ==========================================
     if ($('#trendLineChart').length > 0) {
         const ctxLine = document.getElementById('trendLineChart').getContext('2d');
