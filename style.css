@@ -1,5 +1,4 @@
-    <style>
-        :root {
+      :root {
             --sidebar-bg: #1c2331; 
             --bg-color: #f0f2f5;
             --card-bg: #ffffff;
@@ -66,5 +65,3 @@
         .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         .status-processing { background: #fef3c7; color: #d97706; }
         .status-urban { background: #dcfce7; color: #166534; }
-
-    </style>
