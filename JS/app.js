@@ -1,48 +1,21 @@
 $(document).ready(function() {
     
-    // ==========================================
+// ==========================================
     // PAGE 1: CLASSIFICATION DASHBOARD LOGIC
     // ==========================================
     if ($('#donutChart1').length > 0) {
         
-        // 1. Initialize Chart 1 (Overall Distribution)
-        const ctx1 = document.getElementById('donutChart1').getContext('2d');
-        new Chart(ctx1, {
-            type: 'doughnut',
-            data: {
-                labels: ['Urban', 'Agriculture', 'Nature'],
-                datasets: [{
-                    data: [45, 30, 25],
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        // 2. Initialize Chart 2 (Processed Classes - to fill the empty space)
-        const ctx2 = document.getElementById('donutChart2').getContext('2d');
-        new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: ['Processed', 'Pending'],
-                datasets: [{
-                    data: [80, 20],
-                    backgroundColor: ['#10b981', '#cbd5e1']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+        // ... (Keep your Chart 1 and Chart 2 initialization code here exactly as it was) ...
 
         // 3. Upload Logic (Drag & Drop + Clicking)
         const dropzone = $('#imageDropzone');
         const fileInput = $('#fileInput');
         
-        // Trigger file explorer when clicking the dropzone
+        // THE CLICK FIX: Use [0] to trigger the native HTML click
         dropzone.on('click', function() {
-            fileInput.click();
+            fileInput[0].click();
         });
 
-        // Visual effects for dragging
         dropzone.on('dragover', function(e) {
             e.preventDefault();
             $(this).addClass('dragover');
@@ -53,50 +26,79 @@ $(document).ready(function() {
             $(this).removeClass('dragover');
         });
 
-        // Handle dropped files
         dropzone.on('drop', function(e) {
             e.preventDefault();
             $(this).removeClass('dragover');
-            let files = e.originalEvent.dataTransfer.files;
-            handleFiles(files);
+            handleFiles(e.originalEvent.dataTransfer.files);
         });
 
-        // Handle clicked/selected files
         fileInput.on('change', function(e) {
-            let files = e.target.files;
-            handleFiles(files);
+            handleFiles(e.target.files);
         });
 
-        // The core function that processes the files
+        // 4. Staging Files (Adding to Queue without processing)
         function handleFiles(files) {
-            if(files.length > 0) {
-                let fileName = files[0].name;
+            $.each(files, function(index, file) {
+                let newRowId = 'queue-' + Date.now() + index;
                 
-                // Create a "Processing" row in the UI
-                let newRowId = 'queue-' + Date.now();
-                let processingHtml = `
-                    <div class="queue-item" id="${newRowId}">
+                // Build the row with an image tag and a remove (X) button
+                let itemHtml = `
+                    <div class="queue-item pending-item" id="${newRowId}">
                         <div style="display:flex; align-items:center; gap:15px;">
-                            <div class="queue-img" style="background:#ddd; display:flex; justify-content:center; align-items:center;"><i class="fa-solid fa-satellite" style="color:#888;"></i></div>
-                            <span>${fileName}</span>
+                            <img class="queue-img preview-img" src="" alt="preview" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #ddd;" />
+                            <span>${file.name}</span>
                         </div>
-                        <span class="status-badge status-processing"><i class="fa-solid fa-spinner fa-spin"></i> Processing...</span>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="status-badge" style="background: #e2e8f0; color: #475569;">Ready</span>
+                            <i class="fa-solid fa-xmark remove-btn" style="color: #ef4444; cursor: pointer; font-size: 16px;"></i>
+                        </div>
                     </div>
                 `;
-                
-                // Add it to the top of the queue list
-                $('.queue-list h3').after(processingHtml);
+                $('#queueItemsContainer').prepend(itemHtml);
 
-                // Simulate waiting for the backend
-                setTimeout(function() {
-                    // Update the row with your validated results
-                    $(`#${newRowId} .status-badge`)
-                        .removeClass('status-processing')
-                        .addClass('status-urban')
-                        .html('URBAN (99.4% Confirmed)');
-                }, 1500); 
-            }
+                // Use FileReader to show the image preview on the screen
+                if (file.type.match('image.*')) {
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        $(`#${newRowId} .preview-img`).attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    // Fallback if it's a .tif file that browsers can't render
+                    $(`#${newRowId} .preview-img`).replaceWith('<div class="queue-img" style="background:#ddd; display:flex; justify-content:center; align-items:center; width:50px; height:50px;"><i class="fa-solid fa-satellite" style="color:#888;"></i></div>');
+                }
+
+                // Make the 'X' button work to remove the image before processing
+                $(`#${newRowId} .remove-btn`).on('click', function() {
+                    $(`#${newRowId}`).remove();
+                });
+            });
+            // Reset the hidden input so you can upload the same file again if needed
+            fileInput.val(''); 
         }
+
+        // 5. The "Run Model" Button Logic
+        $('#runModelBtn').on('click', function() {
+            // Find all items that are currently "Ready"
+            $('.pending-item').each(function(index) {
+                let row = $(this);
+                row.removeClass('pending-item'); // Remove pending status
+                row.find('.remove-btn').hide(); // Hide the 'X' button so user can't delete during processing
+                
+                let badge = row.find('.status-badge');
+                badge.css({'background': '#fef3c7', 'color': '#d97706'}).html('<i class="fa-solid fa-spinner fa-spin"></i> Processing...');
+                
+                // Simulate backend AI processing with a slight stagger so they don't all finish at the exact same millisecond
+                setTimeout(function() {
+                    badge.css({'background': '#dcfce7', 'color': '#166534'}).html('URBAN (99.4% Confirmed)');
+                }, 1000 + (index * 500)); 
+            });
+        });
+
+        // Clear All Button Logic
+        $('#clearQueue').on('click', function() {
+            $('#queueItemsContainer').empty();
+        });
     }
 
     // ==========================================
