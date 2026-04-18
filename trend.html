@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trends - Satellite Analysis</title>
+    <title>Trends - SentinelUI</title>
     
     <link rel="stylesheet" type="text/css" href="CSS/style.css">
     
@@ -30,10 +30,14 @@
         </div>
 
         <div class="dashboard-container">
-            <h2 class="page-title">2. Time-Series Trends</h2>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="page-title" style="margin-bottom: 0;">2. Time-Series Trends</h2>
+                <button style="padding: 8px 16px; background: var(--primary-blue); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Export Target</button>
+            </div>
             
             <div class="grid-layout">
-                <div class="left-col">
+                <div class="left-col" style="grid-column: span 1;">
                     <div class="card">
                         <h4 style="margin-bottom: 15px;">Land Cover Change over 10 Years (2015-2025)</h4>
                         <div style="position: relative; height: 300px;">
@@ -49,11 +53,30 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 15px;">Historical Satellite Imagery</h4>
+                
+                <div style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; overflow-x: auto;">
+                    <div style="text-align: center;"><div style="width: 150px; height: 100px; background: #e2e8f0; border-radius: 4px; margin-bottom: 5px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-satellite" style="color:#94a3b8; font-size: 24px;"></i></div><strong>2015</strong></div>
+                    <div style="text-align: center;"><div style="width: 150px; height: 100px; background: #cbd5e1; border-radius: 4px; margin-bottom: 5px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-satellite" style="color:#64748b; font-size: 24px;"></i></div><strong>2017</strong></div>
+                    <div style="text-align: center;"><div style="width: 150px; height: 100px; background: #94a3b8; border-radius: 4px; margin-bottom: 5px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-satellite" style="color:#475569; font-size: 24px;"></i></div><strong>2018</strong></div>
+                    <div style="text-align: center;"><div style="width: 150px; height: 100px; background: #64748b; border-radius: 4px; margin-bottom: 5px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-satellite" style="color:#334155; font-size: 24px;"></i></div><strong>2022</strong></div>
+                    <div style="text-align: center;"><div style="width: 150px; height: 100px; background: #475569; border-radius: 4px; margin-bottom: 5px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-satellite" style="color:#1e293b; font-size: 24px;"></i></div><strong>2025</strong></div>
+                </div>
+                
+                <input type="range" min="2015" max="2025" value="2025" style="width: 100%; cursor: pointer; accent-color: var(--primary-blue);">
+                <div style="display: flex; justify-content: space-between; margin-top: 5px; color: var(--text-light); font-size: 14px; font-weight: bold;">
+                    <span>2015</span>
+                    <span>2025</span>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <script src="Js/app.js"></script>
+    <script src="JS/app.js"></script>
 </body>
 </html>
