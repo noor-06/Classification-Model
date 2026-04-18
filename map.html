@@ -1,1 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Map - SentinelUI</title>
+    
+    <link rel="stylesheet" type="text/css" href="css/style1.css">
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
 
+    <div class="sidebar">
+        <div class="sidebar-logo"><i class="fa-solid fa-satellite"></i> SentinelUI</div>
+        <a href="index.html" class="nav-item"><i class="fa-solid fa-layer-group"></i> Classification</a>
+        <a href="trend.html" class="nav-item"><i class="fa-solid fa-chart-line"></i> Trends</a>
+        <a href="map.html" class="nav-item active"><i class="fa-solid fa-map"></i> Live Map</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div><i class="fa-solid fa-bars" style="cursor:pointer;"></i></div>
+            <div><i class="fa-solid fa-bell"></i> User Profile</div>
+        </div>
+
+        <div class="dashboard-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="page-title" style="margin-bottom: 0;">3. Live Map Analysis</h2>
+                
+                <select id="regionSelect" style="padding: 8px 15px; border-radius: 4px; border: 1px solid #cbd5e1; outline: none; font-weight: bold; cursor: pointer;">
+                    <option value="sa">Target Region: South Africa</option>
+                    <option value="asia">Target Region: Asia</option>
+                </select>
+            </div>
+            
+            <div class="card" style="padding: 0; position: relative;">
+                
+                <div style="position: absolute; top: 20px; right: 20px; background: white; padding: 15px; border-radius: 8px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                    <h4 style="margin-bottom: 10px; font-size: 14px;">Model Classifications</h4>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <input type="checkbox" id="layerUrban" checked style="cursor: pointer;"> 
+                        <label for="layerUrban" style="color: #3b82f6; font-weight: bold; cursor: pointer;">Urban Layer</label>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <input type="checkbox" id="layerAgri" checked style="cursor: pointer;"> 
+                        <label for="layerAgri" style="color: #10b981; font-weight: bold; cursor: pointer;">Agriculture Layer</label>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="layerNature" checked style="cursor: pointer;"> 
+                        <label for="layerNature" style="color: #f59e0b; font-weight: bold; cursor: pointer;">Nature Layer</label>
+                    </div>
+                </div>
+
+                <div id="liveMap" style="height: 650px; width: 100%; border-radius: 8px; z-index: 1;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
