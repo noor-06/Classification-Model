@@ -44,23 +44,18 @@
         </div>
     </div>
 
-    <div class="card queue-list">
+<div class="card queue-list">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3>Queue</h3>
-        <div class="queue-item">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <div class="queue-img" style="background:#ddd;"></div>
-                <span>SA_Region_01.tif</span>
-            </div>
-            <span class="status-badge status-processing">Processing (0.12s)</span>
-        </div>
-        <div class="queue-item">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <div class="queue-img" style="background:#ccc;"></div>
-                <span>Asia_Region_42.tif</span>
-            </div>
-            <span class="status-badge status-urban">URBAN (Confirmed)</span>
+        <div>
+            <button id="clearQueue" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">Clear</button>
+            <button id="runModelBtn" style="padding: 6px 15px; background: var(--primary-blue); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Run Model</button>
         </div>
     </div>
+    
+    <div id="queueItemsContainer">
+        </div>
+</div>
 </div>
 
               <div class="right-col">
