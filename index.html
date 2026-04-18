@@ -1,1 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Image Analysis</title>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-logo"><i class="fa-solid fa-satellite"></i> SentinelUI</div>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-layer-group"></i> Classification</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-chart-line"></i> Trends</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-map"></i> Live Map</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div><i class="fa-solid fa-bars" style="cursor:pointer;"></i></div>
+            <div><i class="fa-solid fa-bell"></i> User Profile</div>
+        </div>
+
+        <div class="dashboard-container">
+            <h2 class="page-title">1. Batch Classification Dashboard</h2>
+            
+            <div class="grid-layout">
+                
+                <div class="left-col">
+                    <div class="card">
+                        <div class="dropzone" id="imageDropzone">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <h3>Upload Image Batch (Max 20)</h3>
+                            <p>Drag and drop satellite images here</p>
+                        </div>
+                    </div>
+
+                    <div class="card queue-list">
+                        <h3>Queue</h3>
+                        <div class="queue-item">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div class="queue-img" style="background:#ddd;"></div>
+                                <span>SA_Region_01.tif</span>
+                            </div>
+                            <span class="status-badge status-processing">Processing (0.12s)</span>
+                        </div>
+                        <div class="queue-item">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div class="queue-img" style="background:#ccc;"></div>
+                                <span>Asia_Region_42.tif</span>
+                            </div>
+                            <span class="status-badge status-urban">URBAN (Confirmed)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-col">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 15px;">Overall Distribution</h4>
+                        <canvas id="donutChart1"></canvas>
+                    </div>
+                    <div class="card">
+                        <h4 style="margin-bottom: 15px;">Processed Classes</h4>
+                        <canvas id="donutChart2"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 1. Initialize the Donut Chart using Chart.js
+            const ctx1 = document.getElementById('donutChart1').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Urban', 'Agriculture', 'Nature'],
+                    datasets: [{
+                        data: [45, 30, 25],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 2. Drag and Drop Visual Effects using JQuery
+            const dropzone = $('#imageDropzone');
+            
+            dropzone.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('dragover');
+            });
+
+            dropzone.on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+            });
+
+            dropzone.on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+                
+                // Get the files that were dropped
+                let files = e.originalEvent.dataTransfer.files;
+                if(files.length > 0) {
+                    alert("You dropped " + files.length + " files. This is where we will call the backend!");
+                    // Later, we will write the AJAX call to FastAPI here.
+                }
+            });
+        });
+    </script>
+</body>
+</html>
