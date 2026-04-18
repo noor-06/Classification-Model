@@ -145,4 +145,39 @@ $(document).ready(function() {
         const map = L.map('miniMap').setView([-26.2041, 28.0473], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
     }
+
+    // ==========================================
+    // PAGE 3: LIVE MAP LOGIC
+    // ==========================================
+    if ($('#liveMap').length > 0) {
+        
+        // 1. Initialize Map centered on South Africa Region
+        const liveMap = L.map('liveMap').setView([-26.2041, 28.0473], 8);
+        
+        // Load the open-source map tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(liveMap);
+
+        // 2. Draw Dummy Classification Areas (Visualizing Model Outputs)
+        const urbanLayer = L.rectangle([[-26.1, 28.0], [-26.3, 28.2]], {color: "#3b82f6", weight: 2, fillOpacity: 0.4}).addTo(liveMap);
+        const agriLayer = L.rectangle([[-26.4, 27.8], [-26.7, 28.1]], {color: "#10b981", weight: 2, fillOpacity: 0.4}).addTo(liveMap);
+        const natureLayer = L.rectangle([[-25.8, 28.3], [-26.0, 28.6]], {color: "#f59e0b", weight: 2, fillOpacity: 0.4}).addTo(liveMap);
+
+        // 3. Region Dropdown Logic
+        $('#regionSelect').on('change', function() {
+            let region = $(this).val();
+            if(region === 'sa') {
+                liveMap.flyTo([-26.2041, 28.0473], 8, { duration: 1.5 }); 
+            } else if (region === 'asia') {
+                liveMap.flyTo([34.0479, 100.6197], 5, { duration: 1.5 }); 
+            }
+        });
+
+        // 4. Toggle Classification Layers On/Off
+        $('#layerUrban').on('change', function() { $(this).is(':checked') ? liveMap.addLayer(urbanLayer) : liveMap.removeLayer(urbanLayer); });
+        $('#layerAgri').on('change', function() { $(this).is(':checked') ? liveMap.addLayer(agriLayer) : liveMap.removeLayer(agriLayer); });
+        $('#layerNature').on('change', function() { $(this).is(':checked') ? liveMap.addLayer(natureLayer) : liveMap.removeLayer(natureLayer); });
+    }
 });
