@@ -20,31 +20,24 @@ $(document).ready(function() {
             options: { responsive: true, maintainAspectRatio: false }
         });
 
-        // 2. Upload Logic (The Guaranteed Click Fix)
+        // 2. Upload Logic
         const dropzone = $('#imageDropzone');
         const fileInput = $('#fileInput');
         
-        // Force the click to open the file explorer
         dropzone.off('click').on('click', function(e) {
-            if(e.target.id !== 'fileInput') { 
-                fileInput[0].click(); 
-            }
+            if(e.target.id !== 'fileInput') { fileInput[0].click(); }
         });
 
-        // Drag effects
         dropzone.off('dragover').on('dragover', function(e) {
-            e.preventDefault();
-            $(this).addClass('dragover');
+            e.preventDefault(); $(this).addClass('dragover');
         });
 
         dropzone.off('dragleave').on('dragleave', function(e) {
-            e.preventDefault();
-            $(this).removeClass('dragover');
+            e.preventDefault(); $(this).removeClass('dragover');
         });
 
         dropzone.off('drop').on('drop', function(e) {
-            e.preventDefault();
-            $(this).removeClass('dragover');
+            e.preventDefault(); $(this).removeClass('dragover');
             handleFiles(e.originalEvent.dataTransfer.files);
         });
 
@@ -52,9 +45,8 @@ $(document).ready(function() {
             handleFiles(e.target.files);
         });
 
-        // 4. Staging Files (Adding to Queue without processing)
+        // 4. Staging Files
         function handleFiles(files) {
-            // 1. The Safety Check
             let currentQueueSize = $('.queue-item').length;
             if (currentQueueSize + files.length > 20) {
                 alert("Maximum batch size is 20 satellite images. Please run the model or clear the queue.");
@@ -64,7 +56,6 @@ $(document).ready(function() {
             $.each(files, function(index, file) {
                 let newRowId = 'queue-' + Date.now() + index;
                 
-                // Build the row with an image tag and a remove (X) button
                 let itemHtml = `
                     <div class="queue-item pending-item" id="${newRowId}" style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
                         <div style="display:flex; align-items:center; gap:15px;">
@@ -77,51 +68,66 @@ $(document).ready(function() {
                         </div>
                     </div>
                 `;
-                $('#queueItemsContainer').prepend(itemHtml);
+                
+                let newRow = $(itemHtml);
+                // *CRITICAL NEW LINE*: Attach the actual file object to the HTML row
+                newRow.data('rawFile', file);
+                $('#queueItemsContainer').prepend(newRow);
 
-                // Use FileReader to show the image preview on the screen
                 if (file.type.match('image.*')) {
                     let reader = new FileReader();
-                    reader.onload = function(e) {
-                        $(`#${newRowId} .preview-img`).attr('src', e.target.result);
-                    }
+                    reader.onload = function(e) { $(`#${newRowId} .preview-img`).attr('src', e.target.result); }
                     reader.readAsDataURL(file);
                 } else {
-                    // Fallback if it's a .tif file that browsers can't render
                     $(`#${newRowId} .preview-img`).replaceWith('<div class="queue-img" style="background:#ddd; display:flex; justify-content:center; align-items:center; width:50px; height:50px;"><i class="fa-solid fa-satellite" style="color:#888;"></i></div>');
                 }
 
-                // Make the 'X' button work to remove the image before processing
-                $(`#${newRowId} .remove-btn`).on('click', function() {
-                    $(`#${newRowId}`).remove();
-                });
+                $(`#${newRowId} .remove-btn`).on('click', function() { $(`#${newRowId}`).remove(); });
             });
-            // Reset the hidden input so you can upload the same file again if needed
             fileInput.val(''); 
         }
 
-        // 5. The "Run Model" Button Logic
+        // 5. The REAL "Run Model" API Connection
         $('#runModelBtn').on('click', function() {
-            // Find all items that are currently "Ready"
-            $('.pending-item').each(function(index) {
+            $('.pending-item').each(function() {
                 let row = $(this);
-                row.removeClass('pending-item'); // Remove pending status
-                row.find('.remove-btn').hide(); // Hide the 'X' button so user can't delete during processing
+                let physicalFile = row.data('rawFile'); // Retrieve the stored file!
+                
+                row.removeClass('pending-item');
+                row.find('.remove-btn').hide(); 
                 
                 let badge = row.find('.status-badge');
                 badge.css({'background': '#fef3c7', 'color': '#d97706'}).html('<i class="fa-solid fa-spinner fa-spin"></i> Processing...');
                 
-                // Simulate backend AI processing with a slight stagger
-                setTimeout(function() {
-                    badge.css({'background': '#dcfce7', 'color': '#166534'}).html('URBAN (99.4% Confirmed)');
-                }, 1000 + (index * 500)); 
+                // Package the file for sending over the internet
+                let formData = new FormData();
+                formData.append("file", physicalFile);
+
+                // Send it to the local Python FastAPI server
+                fetch("http://127.0.0.1:8000/analyze-image/", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Change badge color based on the AI's actual classification
+                    let bg = '#dcfce7'; let text = '#166534'; // Default Green
+                    
+                    if (data.classification === 'Urban') { bg = '#dbeafe'; text = '#1e3a8a'; } // Blue
+                    else if (data.classification === 'Agriculture') { bg = '#dcfce7'; text = '#14532d'; } // Green
+                    else if (data.classification === 'Nature') { bg = '#ffedd5'; text = '#9a3412'; } // Orange
+
+                    // Update the UI with the data from Python!
+                    badge.css({'background': bg, 'color': text}).html(`${data.classification.toUpperCase()} (${data.confidence}% Confirmed)`);
+                })
+                .catch(error => {
+                    console.error("API Error:", error);
+                    badge.css({'background': '#fee2e2', 'color': '#991b1b'}).html('Error Connecting to AI');
+                });
             });
         });
 
-        // Clear All Button Logic
-        $('#clearQueue').on('click', function() {
-            $('#queueItemsContainer').empty();
-        });
+        $('#clearQueue').on('click', function() { $('#queueItemsContainer').empty(); });
     }
 
     // ==========================================
@@ -150,32 +156,19 @@ $(document).ready(function() {
     // PAGE 3: LIVE MAP LOGIC
     // ==========================================
     if ($('#liveMap').length > 0) {
-        
-        // 1. Initialize Map centered on South Africa Region
         const liveMap = L.map('liveMap').setView([-26.2041, 28.0473], 8);
-        
-        // Load the open-source map tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(liveMap);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(liveMap);
 
-        // 2. Draw Dummy Classification Areas (Visualizing Model Outputs)
         const urbanLayer = L.rectangle([[-26.1, 28.0], [-26.3, 28.2]], {color: "#3b82f6", weight: 2, fillOpacity: 0.4}).addTo(liveMap);
         const agriLayer = L.rectangle([[-26.4, 27.8], [-26.7, 28.1]], {color: "#10b981", weight: 2, fillOpacity: 0.4}).addTo(liveMap);
         const natureLayer = L.rectangle([[-25.8, 28.3], [-26.0, 28.6]], {color: "#f59e0b", weight: 2, fillOpacity: 0.4}).addTo(liveMap);
 
-        // 3. Region Dropdown Logic
         $('#regionSelect').on('change', function() {
             let region = $(this).val();
-            if(region === 'sa') {
-                liveMap.flyTo([-26.2041, 28.0473], 8, { duration: 1.5 }); 
-            } else if (region === 'asia') {
-                liveMap.flyTo([34.0479, 100.6197], 5, { duration: 1.5 }); 
-            }
+            if(region === 'sa') { liveMap.flyTo([-26.2041, 28.0473], 8, { duration: 1.5 }); } 
+            else if (region === 'asia') { liveMap.flyTo([34.0479, 100.6197], 5, { duration: 1.5 }); }
         });
 
-        // 4. Toggle Classification Layers On/Off
         $('#layerUrban').on('change', function() { $(this).is(':checked') ? liveMap.addLayer(urbanLayer) : liveMap.removeLayer(urbanLayer); });
         $('#layerAgri').on('change', function() { $(this).is(':checked') ? liveMap.addLayer(agriLayer) : liveMap.removeLayer(agriLayer); });
         $('#layerNature').on('change', function() { $(this).is(':checked') ? liveMap.addLayer(natureLayer) : liveMap.removeLayer(natureLayer); });
